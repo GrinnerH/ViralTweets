@@ -61,59 +61,81 @@ TEST_RATIO = 0.2
 TOP_FEATURES = ["verified", "tweet_length", "possibly_sensitive", "sentiment", "nb_of_hashtags", "has_media", "nb_of_mentions"]
 
 def preprocess_data(dataset):
+    # 将 has_media 列的数据类型转换为整数（0或1），表示是否包含媒体。
     dataset.loc[:, 'has_media'] = dataset.has_media.astype("int")
+    # 将 possibly_sensitive 列的数据类型转换为整数（0或1），表示是否可能包含敏感内容。
     dataset.loc[:, 'possibly_sensitive'] = dataset.possibly_sensitive.astype("int")
 
+    # 过滤出情感置信度分数大于0.7的推文（高情感倾向）。
     #dataset = dataset[dataset.sentiment_score > 0.7]
+    # 将情感标签转换为数值（POSITIVE为1，NEGATIVE为0）。
     dataset.loc[:, 'sentiment'] = dataset.sentiment.replace({'POSITIVE': 1, 'NEGATIVE': 0})
+    # 将 verified 列的数据类型转换为整数（0或1），表示是否为已验证用户。
     dataset.loc[:, 'verified'] = dataset['verified'].astype(int)
 
-    # remove tweets with 0 retweets (to eliminate their effects)
+    # remove tweets with 0 retweets (to eliminate their effects) 去除转发数为0的推文，以消除它们的影响
     #dataset = dataset[dataset.retweet_count > 0]
 
     ## UPDATE: Get tweets tweeted by the same user, on the same day he tweeted a viral tweet
 
     # Get the date from datetime
     # normalize() sets all datetimes clock to midnight, which is equivalent as keeping only the date part
+    # 从 created_at 列提取日期部分，并将时间归一化（设为午夜），只保留日期信息。
     dataset['date'] = dataset.created_at.dt.normalize()
 
     viral_tweets = dataset[dataset.viral]
     non_viral_tweets = dataset[~dataset.viral]
 
+    # 将非病毒推文与病毒推文合并，基于 author_id 和 date，提取必要的列。
     temp = non_viral_tweets.merge(viral_tweets[['author_id', 'date', 'id', 'viral']], on=['author_id', 'date'], suffixes=(None, '_y'))
+    # 提取与非病毒推文在同一天由同一用户发布的病毒推文的唯一ID。
     same_day_viral_ids = temp.id_y.unique()
 
+    # 获取同一天发布的病毒推文，并去除重复项。
     same_day_viral_tweets = viral_tweets[viral_tweets.id.isin(same_day_viral_ids)].drop_duplicates(subset=['author_id', 'date'])
+    # 从合并的结果中获取同一天发布的非病毒推文，并去除重复项。
     same_day_non_viral_tweets = temp.drop_duplicates(subset=['author_id', 'date'])
 
     logging.info(f"Number of viral tweets tweeted on the same day {len(same_day_viral_tweets)}")
     logging.info(f"Number of non viral tweets tweeted on the same day {len(same_day_non_viral_tweets)}")
 
+    # 将同一天的病毒推文和非病毒推文合并成一个新的数据集。
     dataset = pd.concat([same_day_viral_tweets, same_day_non_viral_tweets], axis=0)
+    # 选择要保留的列，包括ID、文本、特征和病毒标志。
     dataset = dataset[['id', 'text'] + TOP_FEATURES + ['viral']]
 
-    # Balance classes to have as many viral as non viral ones
+    # Balance classes to have as many viral as non viral ones 平衡数据集中的病毒和非病毒推文的数量。
     #dataset = pd.concat([positives, negatives.sample(n=len(positives))])
     #dataset = pd.concat([positives.iloc[:100], negatives.sample(n=len(positives)).iloc[:200]])
 
-    # Clean text to prepare for tokenization
+    # Clean text to prepare for tokenization 去除空值推文，以准备后续的文本处理。
     #dataset = dataset.dropna()
+    # 将 viral 列的数据类型转换为整数。
     dataset.loc[:, "viral"] = dataset.viral.astype(int)
 
     # TODO: COMMENT IF YOU WANT TO KEEP TEXT AS IS
+    # 对推文文本进行清理，生成一个新列 cleaned_text，用于后续处理，注释提示如果想保留原始文本可以取消清理。
     dataset["cleaned_text"] = dataset.text.apply(lambda x: clean_tweet(x, demojize_emojis=False))
 
+    # 去除任何包含缺失值的行。
     dataset = dataset.dropna()
+    # 将特征列的值转换为列表，创建一个新的列 extra_features。
     dataset.loc[:, "extra_features"] = dataset[TOP_FEATURES].values.tolist()
+    # 选择最终保留的列，包括ID、清理后的文本、额外特征和病毒标志。
     dataset = dataset[['id', 'cleaned_text', 'extra_features', 'viral']]
 
     return dataset
 
 def prepare_dataset(sample_data, balance=False):
     # Split the train and test data st each has a fixed proportion of viral tweets
+    # 使用 train_test_split 函数将样本数据分为训练集和验证集，确保每个集合中病毒推文的比例相同。
     train_dataset, eval_dataset = train_test_split(sample_data, test_size=TEST_RATIO, random_state=42, stratify=sample_data.viral)
 
     # Balance test set
+    # 如果 balance 为 True，则对验证集进行平衡处理：
+    # 筛选出所有病毒推文和非病毒推文。
+    # 通过对非病毒推文进行随机抽样，使其数量与病毒推文相等。
+    # 将这两个数据集合并，形成平衡后的验证集。
     if balance:
         eval_virals = eval_dataset[eval_dataset.viral == 1]
         eval_non_virals = eval_dataset[eval_dataset.viral == 0]
