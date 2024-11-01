@@ -87,8 +87,10 @@ def preprocess_data(dataset):
     non_viral_tweets = dataset[~dataset.viral]
 
     # 将非病毒推文与病毒推文合并，基于 author_id 和 date，提取必要的列。
+    # 提取该用户发布viral推文的同一天发布的推文，并且添加id_y列和vial_y列，id_y是该日期中发布的那一个viral推文的id，viral_y是True
     temp = non_viral_tweets.merge(viral_tweets[['author_id', 'date', 'id', 'viral']], on=['author_id', 'date'], suffixes=(None, '_y'))
-    # 提取与非病毒推文在同一天由同一用户发布的病毒推文的唯一ID。
+
+    # 提取病毒推文的ID。
     same_day_viral_ids = temp.id_y.unique()
 
     # 获取同一天发布的病毒推文，并去除重复项。
@@ -281,6 +283,9 @@ def test_all_models(ds, nb_extra_dims, models=MODELS):
 def main():
     # DATA FILE SHOULD BE AT THE ROOT WITH THIS SCRIPT
     all_tweets_labeled = pd.read_parquet(f'final_dataset_since_october_2022.parquet.gzip')
+
+    # 自行添加
+    # all_tweets_labeled.to_csv('all_tweets_labeled.csv', index=False)
 
     dataset = preprocess_data(all_tweets_labeled)
     ds = prepare_dataset(dataset, balance=True)
