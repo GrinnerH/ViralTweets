@@ -1,0 +1,8 @@
+{
+    "editor.codeActionsOnSave": {
+        
+    },
+    "terminal.integrated.env.linux": {
+        "PYTHONPATH":"/home/robot/wwh/ViralTweets"
+    }
+}
