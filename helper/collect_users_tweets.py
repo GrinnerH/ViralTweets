@@ -8,7 +8,7 @@ import yaml
 
 import boto3
 
-from helper.twitter_client_wrapper import (
+from twitter_client_wrapper import (
     TWEET_FIELDS,
     format_tweets_df, format_context_annotations,
     load_topic_domains, load_topic_entities, TwitterClientWrapper
@@ -68,17 +68,20 @@ def run(twitter_client, directory, users_ids, tweets_per_user=20000, push_to_rem
 
 def main():
     # TODO: Change depending on whether you're executing this script locally or on a remote server (possibly with s3 access)
-    LOCAL = False
+    # LOCAL = False
+    LOCAL = True
     TWEETS_PER_USER = 4000
     
     if LOCAL:
-        DIRECTORY = ""
+        # DIRECTORY = ""
+        DIRECTORY = "/home/robot/wwh/ViralTweets/data"
         with open("api_key.yaml", 'rt') as file:
             secret = yaml.safe_load(file)
         BEARER_TOKEN = secret['Bearer Token']
         PUSH_TO_REMOTE = False
     else:
-        DIRECTORY="/home/ubuntu/tweet/"
+        #DIRECTORY="/home/ubuntu/tweet/"
+        DIRECTORY="/home/robot/wwh/ViralTweets/data"
         BEARER_TOKEN = os.environ["BearerToken"]
         PUSH_TO_REMOTE = True
     
