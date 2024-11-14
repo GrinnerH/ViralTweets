@@ -16,7 +16,7 @@ df = pd.read_parquet("/home/robot/wwh/ViralTweets/classification/model_with_extr
 # 提取all_tweets相关列
 tweets_columns = ['text', 'possibly_sensitive', 'lang', 'created_at', 'id', 'author_id', 'retweet_count', 'reply_count',
                   'like_count', 'quote_count', 'has_media', 'topic_domains', 'topic_entities', 'hashtags', 'urls', 'viral',
-                  'retweet_count_user_viral_threshold', 'tweet_length', 'sentiment', 'sentiment_score', 'nb_of_hashtags',
+                   'tweet_length', 'sentiment', 'sentiment_score', 'nb_of_hashtags',
                   'mentions', 'nb_of_mentions']
 
 all_tweets_df = df[tweets_columns]
