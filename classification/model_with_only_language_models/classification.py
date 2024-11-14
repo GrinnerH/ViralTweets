@@ -1,3 +1,5 @@
+import sys
+import os
 # MODIFY AS REQUIRED
 import torch
 import pandas as pd
@@ -115,6 +117,8 @@ def prepare_dataset(sample_data, balance=False):
 
     train_dataset.to_parquet("train.parquet.gzip", compression='gzip')
     eval_dataset.to_parquet("test.parquet.gzip", compression='gzip')
+    # train_dataset.to_excel("train.xlsx")
+    # eval_dataset.to_excel("test.xlsx")
 
     ds = load_dataset("parquet", data_files={'train': 'train.parquet.gzip', 'test': 'test.parquet.gzip'})
     return ds
@@ -199,12 +203,15 @@ def test_all_models(ds, models=MODELS):
 
 def main():
     # DATA FILE SHOULD BE AT THE ROOT WITH THIS SCRIPT
-    all_tweets_labeled = pd.read_parquet(f'final_dataset_since_october_2022.parquet.gzip')
-
+    all_tweets_labeled = pd.read_parquet(f'/home/robot/wwh/ViralTweets/classification/model_with_only_language_models/final_dataset_since_october_2022.parquet.gzip')
+    # all_tweets_labeled = pd.read_parquet(f'final_dataset_since_october_2022.parquet.gzip')
     dataset = preprocess_data(all_tweets_labeled)
+    print(dataset.head(10))
     ds = prepare_dataset(dataset, balance=False)
+    print("ds:")
+    print(ds)
 
-    test_all_models(ds)
+    #test_all_models(ds)
 
 if __name__ == "__main__":
     main()

@@ -13,4 +13,4 @@ df = pd.read_parquet("/home/robot/wwh/ViralTweets/classification/model_with_extr
 # 保存到 Parquet 文件
 # author_ids_df.to_parquet('users.parquet.gzip', compression='gzip')
 
-df.to_excel('all_tweets_with_features.xlsx')
+df.to_excel('all_tweets_with_features.xlsx', index=False)
