@@ -3,14 +3,26 @@ import pandas as pd
 # 使用绝对路径读取 Parquet 文件
 df = pd.read_parquet("/home/robot/wwh/ViralTweets/classification/model_with_extra_features/final_dataset_since_october_2022.parquet.gzip")
 #df.to_csv("all_tweets.csv")
-# 提取 author_id 列并去重
-# author_ids = df['author_id'].drop_duplicates()
-# 保存到 CSV
-# author_ids.to_csv("users_ids.csv", index=False)
-# 将 Series 转换为 DataFrame
-# author_ids_df = author_ids.to_frame(name='author_id')
 
-# 保存到 Parquet 文件
-# author_ids_df.to_parquet('users.parquet.gzip', compression='gzip')
+# 提取users相关列
+# users_df = final_df[['author_id', 'followers_count', 'following_count', 'tweet_count', 'protected', 'verified', 'username']]
 
-df.to_excel('all_tweets_with_features.xlsx', index=False)
+# 去重，确保每个author_id只出现一次
+# users_df = users_df.drop_duplicates(subset='author_id')
+
+# 保存为users.parquet.gzip
+# users_df.to_parquet('users.parquet.gzip', compression='gzip')
+
+# 提取all_tweets相关列
+tweets_columns = ['text', 'possibly_sensitive', 'lang', 'created_at', 'id', 'author_id', 'retweet_count', 'reply_count',
+                  'like_count', 'quote_count', 'has_media', 'topic_domains', 'topic_entities', 'hashtags', 'urls', 'viral',
+                  'retweet_count_user_viral_threshold', 'tweet_length', 'sentiment', 'sentiment_score', 'nb_of_hashtags',
+                  'mentions', 'nb_of_mentions']
+
+all_tweets_df = df[tweets_columns]
+
+# 保存为all_tweets.parquet.gzip
+all_tweets_df.to_parquet('all_tweets.parquet.gzip', compression='gzip')
+
+
+# df.to_excel('all_tweets_with_features.xlsx', index=False)
