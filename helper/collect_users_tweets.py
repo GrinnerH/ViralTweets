@@ -66,11 +66,30 @@ def run(twitter_client, directory, users_ids, tweets_per_user=20000, push_to_rem
 
     return
 
+# /自己添加部分
+import os
+import pickle
+
+# 初始化 topic_domains.pickle 和 topic_entities.pickle 文件
+def initialize_topic_files(directory):
+    topic_domains_path = f'{directory}topic_domains.pickle'
+    topic_entities_path = f'{directory}topic_entities.pickle'
+
+    if not os.path.exists(topic_domains_path):
+        with open(topic_domains_path, 'wb') as handle:
+            pickle.dump(set(), handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    if not os.path.exists(topic_entities_path):
+        with open(topic_entities_path, 'wb') as handle:
+            pickle.dump(set(), handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+# 自己添加部分/
+
 def main():
     # TODO: Change depending on whether you're executing this script locally or on a remote server (possibly with s3 access)
     # LOCAL = False
     LOCAL = True
-    TWEETS_PER_USER = 4000
+    TWEETS_PER_USER = 10
     
     if LOCAL:
         DIRECTORY = ""
@@ -84,6 +103,9 @@ def main():
         DIRECTORY="/home/robot/wwh/ViralTweets/data/"
         BEARER_TOKEN = os.environ["BearerToken"]
         PUSH_TO_REMOTE = True
+
+    # 初始化 topic_domains.pickle 和 topic_entities.pickle 文件
+    initialize_topic_files(DIRECTORY)
     
     # Authenticate to Twitter
     client_wrapper = TwitterClientWrapper(BEARER_TOKEN, wait_on_rate_limit=False)
