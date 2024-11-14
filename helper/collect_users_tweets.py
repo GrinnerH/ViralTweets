@@ -73,15 +73,15 @@ def main():
     TWEETS_PER_USER = 4000
     
     if LOCAL:
-        # DIRECTORY = ""
-        DIRECTORY = "/home/robot/wwh/ViralTweets/data"
+        DIRECTORY = ""
+        # DIRECTORY = "/home/robot/wwh/ViralTweets/data/"
         with open("api_key.yaml", 'rt') as file:
             secret = yaml.safe_load(file)
         BEARER_TOKEN = secret['Bearer Token']
         PUSH_TO_REMOTE = False
     else:
         #DIRECTORY="/home/ubuntu/tweet/"
-        DIRECTORY="/home/robot/wwh/ViralTweets/data"
+        DIRECTORY="/home/robot/wwh/ViralTweets/data/"
         BEARER_TOKEN = os.environ["BearerToken"]
         PUSH_TO_REMOTE = True
     
